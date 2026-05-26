@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../../domain/entities/message.dart';
 import '../../domain/entities/pokemon.dart';
 
 import '../../infrastucture/datasources/pokemon_datasource_impl.dart';
@@ -12,24 +12,54 @@ class ChatProvider extends ChangeNotifier {
   );
 
   Pokemon? pokemon;
+  List<Message> messages = [];
+  bool isLoading = false;
+  
 
   String errorMessage = '';
 
   Future<void> searchPokemon(String name) async {
 
-    try {
+  isLoading = true;
 
-      errorMessage = '';
+  messages.add(
+    Message(
+      text: name,
+      isUser: true,
+    ),
+  );
 
-      pokemon = await repository.getPokemon(name);
+  notifyListeners();
 
-    } catch (e) {
+  try {
 
-      pokemon = null;
+    errorMessage = '';
 
-      errorMessage = 'Pokemon no encontrado';
-    }
+    pokemon = await repository.getPokemon(name);
 
-    notifyListeners();
+    messages.add(
+      Message(
+        text: pokemon!.name,
+        isUser: false,
+        imageUrl: pokemon!.image,
+      ),
+    );
+
+  } catch (e) {
+
+    pokemon = null;
+
+    errorMessage = 'Pokemon no encontrado';
+
+    messages.add(
+      Message(
+        text: 'Pokemon no encontrado',
+        isUser: false,
+      ),
+    );
   }
-}
+
+  isLoading = false;
+
+  notifyListeners();
+}}
